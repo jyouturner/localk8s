@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "rumi-reporting.fullname" . }}
+  name: {{ include "app2.fullname" . }}
   labels:
-    {{- include "rumi-reporting.labels" . | nindent 4 }}
+    {{- include "app2.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "rumi-reporting.selectorLabels" . | nindent 4 }}
+    {{- include "app2.selectorLabels" . | nindent 4 }}

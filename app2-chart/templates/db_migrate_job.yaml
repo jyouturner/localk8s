@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: rumi-reporting-db-migrate
+  name: app2-db-migrate
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-delete-policy": hook-succeeded
@@ -10,8 +10,8 @@ spec:
   template:
     spec:
       containers:
-      - name: rumi-reporting-db-migrate
-        image: localhost:5005/rumi-reporting:936
+      - name: app2-db-migrate
+        image: localhost:5005/app2:936
         command: ["migrate"]
         args:
         - -verbose
@@ -23,5 +23,5 @@ spec:
           value: migrate
         envFrom:
           - configMapRef:
-              name: rumi-reporting-env
+              name: app2-env
       restartPolicy: Never

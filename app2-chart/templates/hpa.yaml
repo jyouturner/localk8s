@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "rumi-reporting.fullname" . }}
+  name: {{ include "app2.fullname" . }}
   labels:
-    {{- include "rumi-reporting.labels" . | nindent 4 }}
+    {{- include "app2.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "rumi-reporting.fullname" . }}
+    name: {{ include "app2.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
