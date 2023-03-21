@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rumi-reporting-db-migrate
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: rumi-reporting-db-migrate
+        image: localhost:5005/rumi-reporting:936
+        command: ["migrate"]
+        args:
+        - -verbose
+        - -database=postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
+        - -path=/app/migrations
+        - up
+        env:
+        - name: MODE
+          value: migrate
+        envFrom:
+          - configMapRef:
+              name: rumi-reporting-env
+      restartPolicy: Never

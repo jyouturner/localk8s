@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rumi-reporting.fullname" . }}
+  labels:
+    {{- include "rumi-reporting.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "rumi-reporting.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "rumi-reporting.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rumi-reporting.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          #ports:
+          #  - name: http
+          #    containerPort: {{ .Values.service.port }}
+          #    protocol: TCP
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          #    initialDelaySeconds: 90
+          #readinessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          #    initialDelaySeconds: 90
+          env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: rumi-reporting-secret
+                key: AWS_ACCESS_KEY_ID
+                optional: false
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: rumi-reporting-secret
+                key: AWS_SECRET_ACCESS_KEY
+                optional: false
+          - name: AWS_REGION
+            value: us-west-2
+          - name: ENVIRONMENT
+            value: staging
+          - name: NAMESPACE
+            value: loadtest
+          - name: MODE
+            value: rumi-reporting-webhooks
+          resources: {}
+          envFrom:
+          - configMapRef:
+              name: rumi-reporting-env
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rumi-reporting-env
+data:
+    AWS_REGION: us-west-2
+    LOG_LEVEL: debug
+    DB_NAME: rumi_reporting_test
+    DB_USER: snapp
+    DB_PASSWORD: snapp
+    DB_PORT: "5432"
+    DB_HOST: local-db-postgresql.default.svc.cluster.local
+    DB_SSL_MODE: disable
+    DB_TIMEOUT: "5000"
+    ENVIRONMENT: staging
+    VISIBILITY_TIMEOUT: "30"
+    DD_ENABLED: "false"
+    DD_ENV: development
+    DD_SERVICE: rumi-reporting-local
+    DATADOG_HOSTNAME: localhost
+    DATADOG_PORT: "8126"
+    STATSD_PORT: "8125"
+    DD_DEBUG_MODE: "false"
+    DD_DEBUG_MODE: "false"
+    GRPC_HOST: localhost
+    GRPC_PORT: "9013"
+    GRPC_MAX_DAYS_LIMIT: "60"
+    GRPC_MAX_ROWS_LIMIT: "200"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rumi-reporting-secret
+type: Opaque
+data:
+  AWS_ACCESS_KEY_ID: QUtJQTJFWDdRRDRJVjZQRllVSDY=
+  AWS_SECRET_ACCESS_KEY: WDJOVFo3SHZCNGFkYzkvdXcyNzgyYVNQVTZWODI0bGhyZE9jb2RaQw==
