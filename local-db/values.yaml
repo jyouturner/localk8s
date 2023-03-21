@@ -1,0 +1,11 @@
+
+auth:
+  enablePostgresUser: true
+  postgresPassword: "StrongPassword"
+  username: "..."
+  password: "..."
+  database: "app2_test"
+#primary:
+#  persistence:
+#    enabled: true
+#    existingClaim: "app2-postgres-pv-claim"
